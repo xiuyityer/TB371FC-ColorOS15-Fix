@@ -1,0 +1,10 @@
+/dist/
+/inputs/
+__pycache__/
+*.zip
+*.apk
+*.jar
+*.so
+*.ko
+*.img
+*.bin

@@ -1,0 +1,109 @@
+--- refresh_rate_config.stock.xml
++++ refresh_rate_config.xml
+@@ -501,7 +501,7 @@
+   <item package="com.coloros.familyguard" rateId="1-2-2-3" />  <!--远程守护-->
+   <item package="com.coloros.soundrecorder" rateId="1-2-2-3" />  <!--录音-->
+ <!-- 通话类 -->
+-  <item package="com.android.contacts" rateId="3-2-2-3" />  <!--系统通话-联系人/电话本-->
++  <item package="com.android.contacts" rateId="3-2-2-4" />  <!--系统通话-联系人/电话本-->
+   <item package="com.cootek.smartdialer" rateId="2-2-2-1" />  <!--触宝电话-->
+   <item package="com.tencent.mm.plugin.voip.ui.VideoActivity" rateId="2-2-2-2" />  <!--微信视频聊天-->
+   <item package="com.tencent.av.ui.AVActivity" rateId="2-2-2-2" />  <!--QQ视频聊天-->
+@@ -1168,14 +1168,15 @@
+   <item package="com.cmcc.qianliyan" rateId="2-2-2-2" />  <!--移动看家宝-->
+   <item package="com.hichip.campro" rateId="2-2-2-2" />  <!--CamHipro-->
+ <!-- 其他系统应用-->
+-  <item package="com.oplus.wirelesssettings" rateId="3-2-2-3" />  <!--无线设置、蓝牙设置、连接与共享-->
+-  <item package="com.android.launcher" rateId="3-2-2-3" />  <!--桌面-->
+-  <item package="com.android.settings" rateId="3-2-2-3" />  <!--设置-->
+-  <item package="com.android.permissioncontroller" rateId="3-1-2-3" />  <!--设置-隐私替身-->
+-  <item package="com.android.phone" rateId="3-2-2-3" />  <!--移动网络-->
+-  <item package="com.oplus.uxdesign" rateId="3-2-2-3" />  <!--壁纸与个性化-->
+-  <item package="com.coloros.assistantscreen" rateId="3-2-2-3" />  <!--速览-->
+-  <item package="com.coloros.smartsidebar" rateId="3-2-2-3" />  <!--智能侧边栏-->
++  <item package="com.oplus.wirelesssettings" rateId="3-2-2-4" />  <!--无线设置、蓝牙设置、连接与共享-->
++  <item package="com.android.launcher" activity="com.android.launcher/.Launcher" rateId="3-2-2-4-4" />
++  <item package="com.android.launcher" rateId="3-2-2-4" />  <!--桌面-->
++  <item package="com.android.settings" rateId="3-2-2-4" />  <!--设置-->
++  <item package="com.android.permissioncontroller" rateId="3-1-2-4" />  <!--设置-隐私替身-->
++  <item package="com.android.phone" rateId="3-2-2-4" />  <!--移动网络-->
++  <item package="com.oplus.uxdesign" rateId="3-2-2-4" />  <!--壁纸与个性化-->
++  <item package="com.coloros.assistantscreen" rateId="3-2-2-4" />  <!--速览-->
++  <item package="com.coloros.smartsidebar" rateId="3-2-2-4" />  <!--智能侧边栏-->
+   <item package="com.oplus.ocar" rateId="3-2-2-3" />  <!--Car+车联-->
+   <item package="com.oplus.omoji" rateId="3-2-2-3" />  <!--omoji形象-->
+   <item package="com.coloros.oshare" rateId="3-2-2-3" />  <!--oppo互传-->
+@@ -1194,11 +1195,11 @@
+   <item package="com.coloros.codebook" rateId="3-2-2-3" />  <!--密码本-->
+   <item package="com.coloros.sharescreen" rateId="3-2-2-3" />  <!--屏幕共享-->
+   <item package="com.oplus.screenrecorder" rateId="3-2-2-3" />  <!--屏幕录制-->
+-  <item package="com.heytap.quicksearchbox" rateId="3-2-2-3" />  <!--全局搜索-->
++  <item package="com.heytap.quicksearchbox" rateId="3-2-2-4" />  <!--全局搜索-->
+   <item package="com.oplus.linker" rateId="3-2-2-3" />  <!--手机投屏-->
+   <item package="com.oplus.gesture" rateId="3-2-2-3" />  <!--手势体感-->
+-  <item package="com.android.documentsui" rateId="3-2-2-3" />  <!--文件-->
+-  <item package="com.coloros.filemanager" rateId="3-2-2-3" />  <!--文件管理-->
++  <item package="com.android.documentsui" rateId="3-2-2-4" />  <!--文件-->
++  <item package="com.coloros.filemanager" rateId="3-2-2-4" />  <!--文件管理-->
+   <item package="com.oplus.member" rateId="3-2-2-3" />  <!--我的oppo-->
+   <item package="com.oplus.melody" rateId="3-2-2-3" />  <!--无线耳机-->
+   <item package="com.heytap.tas" rateId="3-2-2-3" />  <!--卡包-->
+@@ -1206,26 +1207,26 @@
+   <item package="com.coloros.colordirectservice" rateId="3-2-2-3" />  <!--小布识屏-->
+   <item package="com.coloros.shortcuts" rateId="3-2-2-3" />  <!--小布指令-->
+   <item package="com.coloros.sceneservice" rateId="3-2-2-3" />  <!--设置-小布助手-->
+-  <item package="com.android.systemui" rateId="3-2-2-3" />  <!--系统ui-->
++  <item package="com.android.systemui" rateId="3-2-2-4" />  <!--系统ui-->
+   <item package="com.oplus.exserviceui" rateId="3-2-2-3" />  <!--设置-特色功能-自由浮窗-->
+   <item package="com.coloros.scenemode" rateId="3-2-2-3" />  <!--简易模式-->
+   <item package="com.android.printspooler" rateId="3-2-2-3" />  <!--设置 打印-->
+-  <item package="com.oplus.notificationmanager" rateId="3-2-2-3" />  <!--设置 -通知管理-->
++  <item package="com.oplus.notificationmanager" rateId="3-2-2-4" />  <!--设置 -通知管理-->
+   <item package="com.oplus.securitypermission" rateId="3-2-2-3" />  <!--权限管理-->
+   <item package="com.oplus.multiapp" rateId="3-2-2-3" />  <!--应用分身-->
+-  <item package="com.coloros.digitalwellbeing" rateId="3-2-2-3" />  <!--应用使用时长-->
++  <item package="com.coloros.digitalwellbeing" rateId="3-2-2-4" />  <!--应用使用时长-->
+   <item package="com.oplus.apprecover" rateId="3-2-2-3" />  <!--设置-系统应用找回-->
+   <item package="com.oplus.trafficmonitor" rateId="3-2-2-3" />  <!--设置 - 流量控制-->
+   <item package="com.oplus.sos" rateId="3-2-2-3" />  <!--sos-->
+   <item package="com.oplus.blacklistapp" rateId="3-2-2-3" />  <!--骚扰拦截-->
+   <item package="com.android.server.telecom" rateId="3-2-2-3" />  <!--通话设置-->
+-  <item package="com.android.mms" rateId="3-2-2-3" />  <!--信息-->
++  <item package="com.android.mms" rateId="3-2-2-4" />  <!--信息-->
+   <item package="com.coloros.floatassistant" rateId="3-2-2-3" />  <!--悬浮球-->
+-  <item package="com.oplus.appdetail" rateId="3-2-2-3" />  <!--应用安装器-->
++  <item package="com.oplus.appdetail" rateId="3-2-2-4" />  <!--应用安装器-->
+   <item package="com.oplus.games" rateId="3-2-2-3" />  <!--游戏助手-->
+   <item package="com.oplus.account" rateId="3-2-2-3" />  <!--帐号中心-->
+   <item package="com.oplus.safecenter" rateId="3-2-2-3" />  <!--安全中心-->
+-  <item package="com.oplus.battery" rateId="3-2-2-3" />  <!--电池-->
++  <item package="com.oplus.battery" rateId="3-2-2-4" />  <!--电池-->
+   <item package="com.android.incallui" rateId="3-2-2-3" />  <!--电话-->
+   <item package="com.oplus.logkit" rateId="3-2-2-3" />  <!--反馈工具箱-->
+   <item package="com.oplus.eyeprotect" rateId="3-2-2-3" />  <!--护眼模式-->
+@@ -1451,7 +1452,7 @@
+   <item package="com.aloha.browser" rateId="1-2-2-3" />  <!--Aloha-->
+   <item package="com.duckduckgo.mobile.android" rateId="1-2-2-3" />  <!--DuckDuckGo-->
+ <!-- Photos -->
+-  <item package="com.coloros.gallery3d" rateId="3-2-2-3" disableViewOverride="true" appreqfirst="true" />  <!--Gallery-->
++  <item package="com.coloros.gallery3d" rateId="3-2-2-4" disableViewOverride="true" appreqfirst="true" />  <!--Gallery-->
+   <item package="com.oneplus.gallery" rateId="1-2-2-3" />  <!--Gallery-->
+   <item package="com.google.android.apps.photos" rateId="1-2-2-3" />  <!--Google Photos-->
+   <item package="com.bigwinepot.nwdn.international" rateId="1-2-2-3" />  <!--Remini - AI Photo Enhancer-->
+@@ -1698,7 +1699,7 @@
+   <item package="com.ixigo.train.ixitrain" rateId="1-2-2-3" />  <!--ixigo trains-->
+   <item package="com.urbanclap.urbanclap" rateId="1-2-2-3" />  <!--Urban Company-->
+ <!-- Security -->
+-  <item package="com.oplus.encryption" rateId="3-1-2-3" />  <!--Private Safe-->
++  <item package="com.oplus.encryption" rateId="3-1-2-4" />  <!--Private Safe-->
+   <item package="mx.com.telcel.di.sds.gsac.dapmov.mdm_telcel" rateId="2-2-2-1" />  <!--telcel-->
+   <item package="com.mm.android.direct.gdmssphone" rateId="2-2-2-1" />  <!--gDMSS Lite-->
+ <!-- News -->
+@@ -2210,6 +2211,6 @@
+       enableFodHighRate true表示可以支持指纹高刷新请求，默认false，部分项目指纹闪屏需要配置
+       maxrefreshsettings 默认高刷状态,设置状态会被截断
+       voiceSceneLowRate 为ture微信发语音降帧，默认为false；voiceSceneLowRateDelay 为微信发语音降帧延时，500表示500ms后进行降帧，默认为1.5s -->
+-  <config ipePencilRateId="3" maxrefreshsettings="3" inputMethodLowRate="false" enableFodHighRate="true" voiceSceneLowRate="true" voiceSceneLowRateDelay="500" enableAppSwitchBoost="true" appSwitchBoostType="0" appSwitchBoostMaxTemperature="47"/>
++  <config defaultMaxRate="144" ipePencilRateId="3" maxrefreshsettings="4" inputMethodLowRate="false" enableFodHighRate="true" voiceSceneLowRate="true" voiceSceneLowRateDelay="500" enableAppSwitchBoost="true" appSwitchBoostType="0" appSwitchBoostMaxTemperature="47"/>
+ </refresh_rate_config>
+ 

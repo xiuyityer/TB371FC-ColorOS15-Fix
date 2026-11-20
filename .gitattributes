@@ -1,0 +1,2 @@
+methods/refresh/refresh-rate.patch -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+methods/sharing/vnet/** -text whitespace=-blank-at-eof
