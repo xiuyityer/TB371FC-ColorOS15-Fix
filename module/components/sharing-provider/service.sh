@@ -3,6 +3,7 @@ set -eu
 
 umask 077
 module_dir=${0%/*}
+. "$module_dir/common.sh"
 exec >"$module_dir/service.log" 2>&1
 printf 'start=%s\n' "$(date +%FT%T%z)"
 
@@ -13,10 +14,6 @@ for attempt in $(seq 1 90); do
 done
 [ "$(getprop sys.boot_completed)" = 1 ]
 [ ! -e "$C15_MODULE_ROOT/disable" ] && [ ! -e "$C15_MODULE_ROOT/remove" ]
-[ "$(getprop ro.boot.slot_suffix)" = _a ]
-[ "$(uname -r)" = 4.19.325-perf++ ]
-[ "$(uname -v | cut -d ' ' -f 1)" = '#789' ]
-[ "$(getprop ro.build.fingerprint)" = 'OnePlus/OPD2413/OP615EL1:15/AP3A.240617.008/V.1ffac6c_1-12d5f:user/release-keys' ]
 [ -r /odm/etc/vintf/manifest/c15-virtual-provider.xml ]
 # Binder's shell command needs an stderr fd that system_server can write.
 [ "$(/system/bin/pm has-feature android.hardware.telephony.subscription 2>/dev/null)" = true ] || {
@@ -26,12 +23,6 @@ done
 
 cd "$module_dir"
 sha256sum -c SHA256SUMS
-if ! grep -q '^oplus_vnet ' /proc/modules; then
-    insmod "$module_dir/oplus_vnet.ko" numvnets=3
-fi
-for interface in ovnet0 ovnet1 ovnet2; do
-    test -d "/sys/class/net/$interface"
-done
 
 export LD_LIBRARY_PATH="$module_dir/lib64:/vendor/lib64:/odm/lib64:/system_ext/lib64"
 dmtp=vendor.oplus.hardware.communicationcenter.IDmtpService/default
@@ -41,14 +32,23 @@ case "$(service check "$dmtp")" in
 esac
 
 apk="$module_dir/OplusVirtualComm-slot-signal-guard.apk"
-target=/system_ext/priv-app/OplusVirtualComm/OplusVirtualComm.apk
-stock=e5af274500b6478a36aa1e69666596c9b6d81cc65d559b1e7b073cc54d558b3a
+target=$virtualcomm_target
+stock=$virtualcomm_stock
 in_init() { nsenter -t 1 -m -- "$@"; }
-file_hash() { sha256sum "$1" | cut -d ' ' -f 1; }
 target_hash() { in_init sha256sum "$target" | cut -d ' ' -f 1; }
 patched=$(file_hash "$apk")
 [ "$(target_hash)" = "$stock" ] || { echo 'Unexpected stock VirtualComm APK'; exit 1; }
 old_phone=$(pidof com.android.phone)
+
+if ! grep -q '^oplus_vnet ' /proc/modules; then
+    insmod "$module_dir/oplus_vnet.ko" numvnets=3 || {
+        echo 'Cannot load oplus_vnet on this kernel'
+        exit 1
+    }
+fi
+for interface in ovnet0 ovnet1 ovnet2; do
+    [ -d "/sys/class/net/$interface" ] || { echo "Missing network interface: $interface"; exit 1; }
+done
 
 radio_pid=
 comm_pid=

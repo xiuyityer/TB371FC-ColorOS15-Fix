@@ -6,7 +6,6 @@ module_dir=${0%/*}
 umask 077
 exec >"$module_dir/mount.log" 2>&1
 trap 'echo "exit=$?"' EXIT
-check_device
 require_hash "$config" "$stock"
 require_hash "$module_dir/refresh_rate_config.xml" "$replacement"
 chcon u:object_r:system_file:s0 "$module_dir/refresh_rate_config.xml"

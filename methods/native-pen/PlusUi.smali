@@ -11,7 +11,7 @@
     return-void
 .end method
 
-.method private static isPlus(Lcom/oplus/ipemanager/btadsorb/setting/fragment/l;)Z
+.method private static model(Lcom/oplus/ipemanager/btadsorb/setting/fragment/l;)I
     .locals 2
     if-eqz p0, :no
     iget-object v0, p0, Lcom/oplus/ipemanager/btadsorb/setting/fragment/l;->F:Ljava/lang/String;
@@ -19,7 +19,16 @@
     move-result-object v0
     const-string v1, "Lenovo Tab Pen Plus"
     invoke-virtual {v1, v0}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
-    move-result v0
+    move-result v1
+    if-eqz v1, :check_precision
+    const/4 v0, 0x1
+    return v0
+    :check_precision
+    const-string v1, "Lenovo Precision Pen 3"
+    invoke-virtual {v1, v0}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+    move-result v1
+    if-eqz v1, :no
+    const/4 v0, 0x2
     return v0
     :no
     const/4 v0, 0x0
@@ -29,12 +38,13 @@
 .method public static post(Lcom/oplus/ipemanager/btadsorb/setting/activity/PencilSettingActivity;)Z
     .locals 2
     iget-object v0, p0, Lcom/oplus/ipemanager/btadsorb/setting/activity/PencilSettingActivity;->i:Lcom/oplus/ipemanager/btadsorb/setting/fragment/l;
-    invoke-static {v0}, Ltb371/PlusUi;->isPlus(Lcom/oplus/ipemanager/btadsorb/setting/fragment/l;)Z
+    invoke-static {v0}, Ltb371/PlusUi;->model(Lcom/oplus/ipemanager/btadsorb/setting/fragment/l;)I
     move-result v0
     if-eqz v0, :done
     new-instance v1, Ltb371/PlusUi;
     invoke-direct {v1, p0}, Ltb371/PlusUi;-><init>(Lcom/oplus/ipemanager/btadsorb/setting/activity/PencilSettingActivity;)V
     invoke-virtual {p0, v1}, Landroid/app/Activity;->runOnUiThread(Ljava/lang/Runnable;)V
+    const/4 v0, 0x1
     :done
     return v0
 .end method
@@ -49,11 +59,18 @@
 
 .method public static render(Lcom/oplus/ipemanager/btadsorb/setting/fragment/l;)V
     .locals 8
-    invoke-static {p0}, Ltb371/PlusUi;->isPlus(Lcom/oplus/ipemanager/btadsorb/setting/fragment/l;)Z
-    move-result v0
-    if-eqz v0, :done
+    invoke-static {p0}, Ltb371/PlusUi;->model(Lcom/oplus/ipemanager/btadsorb/setting/fragment/l;)I
+    move-result v1
+    if-eqz v1, :done
     iget-object v0, p0, Lcom/oplus/ipemanager/btadsorb/setting/fragment/l;->g:Lcom/coui/appcompat/preference/COUIJumpPreference;
     if-eqz v0, :done
+    const/4 v2, 0x2
+    if-ne v1, v2, :plus
+    # The OEM preference can contain a battery value cached for another pen.
+    const/4 v1, 0x0
+    invoke-virtual {v0, v1}, Lcom/coui/appcompat/preference/COUIPreference;->setAssignment(Ljava/lang/CharSequence;)V
+    return-void
+    :plus
     invoke-virtual {p0}, Landroidx/fragment/app/Fragment;->getContext()Landroid/content/Context;
     move-result-object v1
     if-eqz v1, :done

@@ -8,7 +8,6 @@ root=${C15_MODULE_ROOT:?}
 umask 077
 exec >"$module_dir/service.log" 2>&1
 trap 'echo "exit=$?"' EXIT
-check_device
 for attempt in $(seq 1 90); do
     [ "$(getprop sys.boot_completed)" != 1 ] || break
     sleep 2
@@ -19,7 +18,10 @@ done
 server=$(pidof system_server)
 require_hash "/proc/$server/root$config" "$replacement"
 require_hash "$module_dir/pen-refresh" "$bridge"
-[ -r /proc/fw_pen_state ] && [ -r /sys/class/drm/card0-DSI-1/dpms ]
+if [ ! -r /proc/fw_pen_state ] || [ ! -r /sys/class/drm/card0-DSI-1/dpms ]; then
+    echo 'Pen state or display power interface unavailable'
+    exit 1
+fi
 [ ! -L "$state" ]
 mkdir -p "$state"
 chmod 0700 "$state"

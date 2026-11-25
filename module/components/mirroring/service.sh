@@ -14,10 +14,6 @@ require() {
     fi
 }
 
-require test "$(getprop ro.boot.slot_suffix)" = _a
-require test "$(getprop ro.build.fingerprint)" = 'OnePlus/OPD2413/OP615EL1:15/AP3A.240617.008/V.1ffac6c_1-12d5f:user/release-keys'
-require test "$(getenforce)" = Enforcing
-
 for attempt in $(seq 1 90); do
     [ "$(getprop sys.boot_completed)" != 1 ] || break
     sleep 2

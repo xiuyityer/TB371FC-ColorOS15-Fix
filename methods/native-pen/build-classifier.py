@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Build an IPeManager process-only probe; the APK is not installable."""
+import argparse
 import hashlib
 import os
 from pathlib import Path
@@ -7,19 +8,25 @@ import re
 import shutil
 import struct
 import subprocess
-import sys
 import tempfile
 from zipfile import ZipFile, ZipInfo, ZIP_STORED
 
 run = Path(__file__).resolve().parent
 tools = Path(os.environ['SMALI_TOOLS']).resolve()
 java = os.environ.get('JAVA', 'java')
-original = run / 'IPeManager.stock.apk'
-bridge = '--hid-bridge' in sys.argv[1:]
-telemetry = '--plus-telemetry' in sys.argv[1:]
-assert not telemetry or bridge
-candidate = run / ('IPeManager.plus-telemetry.apk' if telemetry else
-                   'IPeManager.hid-bridge.apk' if bridge else 'IPeManager.tab-pen-probe.apk')
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--stock', type=Path, default=run / 'IPeManager.stock.apk')
+parser.add_argument('--output', type=Path)
+parser.add_argument('--hid-bridge', action='store_true')
+parser.add_argument('--plus-telemetry', action='store_true')
+args = parser.parse_args()
+original = args.stock
+bridge = args.hid_bridge
+telemetry = args.plus_telemetry
+if telemetry and not bridge:
+    parser.error('--plus-telemetry requires --hid-bridge')
+candidate = args.output or run / ('IPeManager.plus-telemetry.apk' if telemetry else
+                                  'IPeManager.hid-bridge.apk' if bridge else 'IPeManager.tab-pen-probe.apk')
 assert hashlib.sha256(original.read_bytes()).hexdigest() == 'd4e7b3f0c71b0cd24e8b6abee317302edcaef31916351c8377c31b92afc2752a'
 
 
@@ -44,8 +51,25 @@ def add_hid_bridge(tree):
     source = source.replace('# direct methods\n', methods + '\n# direct methods\n')
     if telemetry:
         (tree / 'tb371').mkdir()
-        for helper in ('PlusGatt.smali', 'PlusUi.smali', 'PlusButtons.smali'):
+        for helper in ('PlusGatt.smali', 'PlusUi.smali', 'PlusButtons.smali', 'PenCapsule.smali', 'PenDeviceSpace.smali'):
             shutil.copyfile(run / helper, tree / 'tb371' / helper)
+        device_store = tree / 'm2/a.smali'
+        store_code = device_store.read_text()
+        device_kind = 'Lw2/f;->k(Ljava/lang/String;)Lcom/oplus/ipemanager/btadsorb/data/IpeDeviceType;'
+        assert store_code.count(device_kind) == 2
+        store_code = store_code.replace(device_kind, device_kind.replace('Lw2/f;->k', 'Ltb371/PenDeviceSpace;->kind'))
+        start = store_code.index('.method public static c(Landroid/content/Context;')
+        end = store_code.index('.end method', start)
+        pencil_card = store_code[start:end]
+        assert pencil_card.count('Lw2/f;->t(') == pencil_card.count('Lw2/f;->p(') == 1
+        pencil_card = pencil_card.replace('Lw2/f;->t(', 'Ltb371/PenDeviceSpace;->type(')
+        pencil_card = pencil_card.replace('Lw2/f;->p(', 'Ltb371/PenDeviceSpace;->model(')
+        device_store.write_text(store_code[:start] + pencil_card + store_code[end:])
+        fluid_card = tree / 'x2/a.smali'
+        card_code = fluid_card.read_text()
+        pen_present = 'Lw2/f;->w()Ljava/lang/Integer;'
+        assert card_code.count(pen_present) == 1
+        fluid_card.write_text(card_code.replace(pen_present, 'Ltb371/PenCapsule;->cardPenPresent()Ljava/lang/Integer;'))
         settings = 'com/oplus/ipemanager/btadsorb/setting/'
         ui = tree / (settings + 'fragment/l.smali')
         stock_ui_type = 'Lw2/f;->t(Ljava/lang/String;)Lcom/oplus/ipemanager/btadsorb/data/PencilType;'
@@ -76,6 +100,8 @@ def add_hid_bridge(tree):
         anchor = '    :ours\n    iput-object v0, p0, '
         assert source.count(anchor) == 1
         source = source.replace(anchor, f'''    :ours
+    iget-object v5, p0, Lcom/oplus/ipemanager/btadsorb/ble/BleManager;->a:Landroid/content/Context;
+    invoke-static {{v5, v1}}, Ltb371/PenDeviceSpace;->disconnect(Landroid/content/Context;Ljava/lang/String;)V
     iget-object v5, p0, {manager}->tb371Gatt:Landroid/bluetooth/BluetoothGatt;
     if-eqz v5, :tb371_clear_state
     const/4 v6, 0x0
@@ -84,25 +110,29 @@ def add_hid_bridge(tree):
     :tb371_clear_state
     const/4 v6, -0x1
     invoke-static {{p0, v6}}, Ltb371/PlusGatt;->power({manager}I)V
+    iget-object v5, p0, Lcom/oplus/ipemanager/btadsorb/ble/BleManager;->a:Landroid/content/Context;
+    const-string v3, "pencil_sp_battery_level"
+    invoke-static {{v5, v6, v3}}, Lt1/a;->f(Landroid/content/Context;ILjava/lang/String;)V
+    const-string v3, "ipe_pencil_battery_level"
+    const/4 v5, 0x0
+    invoke-static {{v3, v5}}, La2/a;->b(Ljava/lang/String;Ljava/lang/String;)V
     iput-object v0, p0, ''')
-        anchor = '    move-object v1, v0\n    const-string v5, "bonded Lenovo Tab Pen Plus HID connected"'
+        anchor = '    move-object v1, v0\n    invoke-virtual {v7}, Landroid/bluetooth/BluetoothDevice;->getName()Ljava/lang/String;'
         assert source.count(anchor) == 1
         source = source.replace(anchor, f'''    move-object v1, v0
     invoke-static {{p0, v7}}, Ltb371/PlusGatt;->connect({manager}Landroid/bluetooth/BluetoothDevice;)Landroid/bluetooth/BluetoothGatt;
     move-result-object v5
     iput-object v5, p0, {manager}->tb371Gatt:Landroid/bluetooth/BluetoothGatt;
-    const-string v5, "bonded Lenovo Tab Pen Plus HID connected"''')
-        # The iterator's device register is reused for the OEM state object.
-        source = source.replace('    .locals 7\n    const/4 v0, 0x0\n    iget-object v1, p0, '
-                                + manager + '->tb371Profile:',
-                                '    .locals 8\n    const/4 v7, 0x0\n    const/4 v0, 0x0\n    iget-object v1, p0, '
-                                + manager + '->tb371Profile:', 1)
-        source = source.replace('    move-result-object v0\n    :publish',
-                                '    move-result-object v0\n    move-object v7, v2\n    :publish', 1)
+    invoke-virtual {{v7}}, Landroid/bluetooth/BluetoothDevice;->getName()Ljava/lang/String;''')
         anchor = '    iput v4, v2, Lcom/oplus/ipemanager/btadsorb/ble/g;->f:I\n'
         assert source.count(anchor) == 1
         source = source.replace(anchor, anchor + '''    const-string v5, "ipe_pencil_connect_state"
     invoke-static {v4, v5}, La2/a;->a(ILjava/lang/String;)V
+    iget-object v5, p0, Lcom/oplus/ipemanager/btadsorb/ble/BleManager;->a:Landroid/content/Context;
+    invoke-static {v5, v7}, Ltb371/PenCapsule;->connection(Landroid/content/Context;Landroid/bluetooth/BluetoothDevice;)V
+    if-eqz v7, :tb371_notify_ui
+    invoke-static {v5, v7}, Ltb371/PenDeviceSpace;->connect(Landroid/content/Context;Landroid/bluetooth/BluetoothDevice;)V
+    :tb371_notify_ui
 ''')
     source = source.replace('# annotations\n',
                             '.implements Landroid/bluetooth/BluetoothProfile$ServiceListener;\n\n# annotations\n', 1)

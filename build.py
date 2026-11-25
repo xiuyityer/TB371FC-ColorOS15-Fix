@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 import re
+import struct
 from io import BytesIO
 from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
@@ -12,6 +13,7 @@ ROOT = Path(__file__).resolve().parent
 LOCK = json.loads((ROOT / 'inputs.lock.json').read_text())
 SKIP = {'customize.sh', 'module.prop', 'skip_mount', 'SHA256SUMS'}
 HEX = re.compile(r'^[0-9a-f]{64}$')
+IMS_LIBRARY = 'components/sharing-provider/lib64/lib-virtual-modem-qti-ims.so'
 
 
 def digest(content):
@@ -39,11 +41,23 @@ def read_inputs(input_dir):
     return files
 
 
+def restore_ims_registration(content):
+    if digest(content) != 'ec5ec07cf6e5ee43dc23428d0ab58f7cab88654e0614db992e9a1cb417991c69':
+        raise ValueError('Unexpected local-only IMS library SHA-256')
+    library = bytearray(content)
+    # Restore the donor's service registration and keep its stack checks and
+    # cleanup. Only skip the subsequent Mindroid log call, which crashes.
+    struct.pack_into('<I', library, 0x2FC84, 0xB9801268)
+    struct.pack_into('<I', library, 0x2FD34, 0xD503201F)
+    return bytes(library)
+
+
 def package(input_dir, output_dir):
     files = read_inputs(input_dir)
+    files[IMS_LIBRARY] = restore_ims_registration(files[IMS_LIBRARY])
     template = ROOT / 'module'
     for path in template.rglob('*'):
-        if path.is_file() and (path.suffix == '.sh' or path == template / 'module.prop'):
+        if path.is_file() and (path.suffix in {'.sh', '.xml'} or path == template / 'module.prop'):
             files[path.relative_to(template).as_posix()] = path.read_bytes()
     provider = 'components/sharing-provider/'
     files[provider + 'SHA256SUMS'] = sums({name.removeprefix(provider): data for name, data in files.items()
@@ -51,7 +65,9 @@ def package(input_dir, output_dir):
     files['skip_mount'] = b''
     files['SHA256SUMS'] = sums(files)
     output_dir.mkdir(parents=True, exist_ok=True)
-    output = output_dir / 'kayu-coloros15-fix-v1.0.zip'
+    version = next(line.split('=', 1)[1] for line in files['module.prop'].decode().splitlines()
+                   if line.startswith('version='))
+    output = output_dir / f'kayu-coloros15-fix-{version}.zip'
     temporary = output.with_suffix('.tmp')
     with ZipFile(temporary, 'w', ZIP_DEFLATED) as archive:
         for name, data in sorted(files.items()):

@@ -3,7 +3,6 @@ MODROOT=$MODPATH
 . "$MODROOT/common.sh"
 
 [ "$BOOTMODE" = true ] || abort 'Install from KernelSU Manager in Android.'
-supported_device || abort 'Unsupported board, ROM, slot, kernel or SELinux mode.'
 no_legacy_modules || abort 'Disable the five legacy C15 modules and resolve any pending updates first.'
 (cd "$MODROOT" && sha256sum -c SHA256SUMS) || abort 'Package integrity check failed.'
 

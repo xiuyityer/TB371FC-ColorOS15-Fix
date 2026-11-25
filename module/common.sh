@@ -1,14 +1,5 @@
 ADB_ROOT=/data/adb
 
-supported_device() {
-    [ "$(getprop ro.product.board)" = spinel ] &&
-        [ "$(getprop ro.boot.slot_suffix)" = _a ] &&
-        [ "$(getprop ro.build.fingerprint)" = 'OnePlus/OPD2413/OP615EL1:15/AP3A.240617.008/V.1ffac6c_1-12d5f:user/release-keys' ] &&
-        [ "$(uname -r)" = 4.19.325-perf++ ] &&
-        [ "$(uname -v | cut -d ' ' -f 1)" = '#789' ] &&
-        [ "$(getenforce)" = Enforcing ]
-}
-
 module_enabled() { [ ! -e "$MODROOT/disable" ] && [ ! -e "$MODROOT/remove" ]; }
 
 no_legacy_modules() {

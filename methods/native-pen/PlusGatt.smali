@@ -1,7 +1,13 @@
 .class public final Ltb371/PlusGatt;
 .super Landroid/bluetooth/BluetoothGattCallback;
+.implements Ljava/lang/Runnable;
 
 .field private final owner:Lcom/oplus/ipemanager/btadsorb/ble/PencilBleManager;
+.field private final precision:Z
+.field private final handler:Landroid/os/Handler;
+.field private link:Landroid/bluetooth/BluetoothGatt;
+.field private precisionLevelPlusOne:I
+.field private precisionCharging:Z
 .field private step:I
 
 .method public static connect(Lcom/oplus/ipemanager/btadsorb/ble/PencilBleManager;Landroid/bluetooth/BluetoothDevice;)Landroid/bluetooth/BluetoothGatt;
@@ -9,14 +15,19 @@
     move-object v0, p1
     iget-object v1, p0, Lcom/oplus/ipemanager/btadsorb/ble/BleManager;->a:Landroid/content/Context;
     const/4 v2, 0x0
-    new-instance v3, Ltb371/PlusGatt;
-    invoke-direct {v3, p0}, Ltb371/PlusGatt;-><init>(Lcom/oplus/ipemanager/btadsorb/ble/PencilBleManager;)V
     const/4 v4, 0x2
     const/4 v5, 0x1
     new-instance v6, Landroid/os/Handler;
     invoke-static {}, Landroid/os/Looper;->getMainLooper()Landroid/os/Looper;
     move-result-object v7
     invoke-direct {v6, v7}, Landroid/os/Handler;-><init>(Landroid/os/Looper;)V
+    invoke-virtual {p1}, Landroid/bluetooth/BluetoothDevice;->getName()Ljava/lang/String;
+    move-result-object v7
+    const-string v3, "Lenovo Precision Pen 3"
+    invoke-virtual {v3, v7}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+    move-result v7
+    new-instance v3, Ltb371/PlusGatt;
+    invoke-direct {v3, p0, v7, v6}, Ltb371/PlusGatt;-><init>(Lcom/oplus/ipemanager/btadsorb/ble/PencilBleManager;ZLandroid/os/Handler;)V
     invoke-virtual/range {v0 .. v6}, Landroid/bluetooth/BluetoothDevice;->connectGatt(Landroid/content/Context;ZLandroid/bluetooth/BluetoothGattCallback;IILandroid/os/Handler;)Landroid/bluetooth/BluetoothGatt;
     move-result-object v0
     return-object v0
@@ -24,6 +35,9 @@
 
 .method public static power(Lcom/oplus/ipemanager/btadsorb/ble/PencilBleManager;I)V
     .locals 3
+    iget-object v0, p0, Lcom/oplus/ipemanager/btadsorb/ble/BleManager;->a:Landroid/content/Context;
+    const-string v1, "pencil_sp_charging_state"
+    invoke-static {v0, p1, v1}, Lt1/a;->f(Landroid/content/Context;ILjava/lang/String;)V
     const-string v0, "ipe_pencil_charging_state"
     if-ltz p1, :unknown
     invoke-static {p1, v0}, La2/a;->a(ILjava/lang/String;)V
@@ -129,10 +143,12 @@
     .end packed-switch
 .end method
 
-.method public constructor <init>(Lcom/oplus/ipemanager/btadsorb/ble/PencilBleManager;)V
+.method private constructor <init>(Lcom/oplus/ipemanager/btadsorb/ble/PencilBleManager;ZLandroid/os/Handler;)V
     .locals 0
     invoke-direct {p0}, Landroid/bluetooth/BluetoothGattCallback;-><init>()V
     iput-object p1, p0, Ltb371/PlusGatt;->owner:Lcom/oplus/ipemanager/btadsorb/ble/PencilBleManager;
+    iput-boolean p2, p0, Ltb371/PlusGatt;->precision:Z
+    iput-object p3, p0, Ltb371/PlusGatt;->handler:Landroid/os/Handler;
     return-void
 .end method
 
@@ -144,6 +160,7 @@
     const/4 v0, 0x2
     if-ne p3, v0, :check_close
     if-nez p2, :check_close
+    iput-object p1, p0, Ltb371/PlusGatt;->link:Landroid/bluetooth/BluetoothGatt;
     invoke-virtual {p1}, Landroid/bluetooth/BluetoothGatt;->discoverServices()Z
     move-result v0
     if-nez v0, :done
@@ -232,6 +249,8 @@
     packed-switch v0, :steps
     const/4 v1, 0x6
     if-ne v0, v1, :done
+    iget-boolean v1, p0, Ltb371/PlusGatt;->precision:Z
+    if-nez v1, :done
     invoke-direct {p0, p1}, Ltb371/PlusGatt;->listenHid(Landroid/bluetooth/BluetoothGatt;)V
     :done
     return-void
@@ -240,10 +259,14 @@
     const-string v2, "00002a19-0000-1000-8000-00805f9b34fb"
     goto :read
     :firmware
+    iget-boolean v1, p0, Ltb371/PlusGatt;->precision:Z
+    if-nez v1, :next
     const-string v1, "0000180a-0000-1000-8000-00805f9b34fb"
     const-string v2, "00002a26-0000-1000-8000-00805f9b34fb"
     goto :read
     :hardware
+    iget-boolean v1, p0, Ltb371/PlusGatt;->precision:Z
+    if-nez v1, :next
     const-string v1, "0000180a-0000-1000-8000-00805f9b34fb"
     const-string v2, "00002a27-0000-1000-8000-00805f9b34fb"
     goto :read
@@ -424,11 +447,64 @@
     :publish
     iget-object v0, p0, Ltb371/PlusGatt;->owner:Lcom/oplus/ipemanager/btadsorb/ble/PencilBleManager;
     invoke-static {v0, v1}, Ltb371/PlusGatt;->power(Lcom/oplus/ipemanager/btadsorb/ble/PencilBleManager;I)V
+    if-ltz v1, :done
+    invoke-direct {p0}, Ltb371/PlusGatt;->refreshCard()V
+    iget-boolean v0, p0, Ltb371/PlusGatt;->precision:Z
+    if-eqz v0, :done
+    invoke-direct {p0, v1}, Ltb371/PlusGatt;->updatePrecisionCharging(Z)V
+    :done
+    return-void
+.end method
+
+.method private refreshCard()V
+    .locals 2
+    iget-object v0, p0, Ltb371/PlusGatt;->link:Landroid/bluetooth/BluetoothGatt;
+    if-eqz v0, :done
+    invoke-virtual {v0}, Landroid/bluetooth/BluetoothGatt;->getDevice()Landroid/bluetooth/BluetoothDevice;
+    move-result-object v0
+    iget-object v1, p0, Ltb371/PlusGatt;->owner:Lcom/oplus/ipemanager/btadsorb/ble/PencilBleManager;
+    iget-object v1, v1, Lcom/oplus/ipemanager/btadsorb/ble/BleManager;->a:Landroid/content/Context;
+    invoke-static {v1, v0}, Ltb371/PenDeviceSpace;->battery(Landroid/content/Context;Landroid/bluetooth/BluetoothDevice;)V
+    :done
+    return-void
+.end method
+
+.method private updatePrecisionCharging(Z)V
+    .locals 3
+    iget-boolean v0, p0, Ltb371/PlusGatt;->precisionCharging:Z
+    if-eq v0, p1, :done
+    iput-boolean p1, p0, Ltb371/PlusGatt;->precisionCharging:Z
+    iget-object v0, p0, Ltb371/PlusGatt;->handler:Landroid/os/Handler;
+    if-eqz p1, :cancel
+    # Let the connection capsule finish before showing a charge detected on connect.
+    const-wide/16 v1, 0x157c
+    invoke-virtual {v0, p0, v1, v2}, Landroid/os/Handler;->postDelayed(Ljava/lang/Runnable;J)Z
+    return-void
+    :cancel
+    invoke-virtual {v0, p0}, Landroid/os/Handler;->removeCallbacks(Ljava/lang/Runnable;)V
+    :done
+    return-void
+.end method
+
+.method public run()V
+    .locals 2
+    iget-object v0, p0, Ltb371/PlusGatt;->link:Landroid/bluetooth/BluetoothGatt;
+    if-eqz v0, :done
+    invoke-direct {p0, v0}, Ltb371/PlusGatt;->current(Landroid/bluetooth/BluetoothGatt;)Z
+    move-result v0
+    if-eqz v0, :done
+    iget-boolean v0, p0, Ltb371/PlusGatt;->precisionCharging:Z
+    if-eqz v0, :done
+    iget v1, p0, Ltb371/PlusGatt;->precisionLevelPlusOne:I
+    add-int/lit8 v1, v1, -0x1
+    iget-object v0, p0, Ltb371/PlusGatt;->owner:Lcom/oplus/ipemanager/btadsorb/ble/PencilBleManager;
+    invoke-static {v0, v1}, Ltb371/PenCapsule;->charging(Lcom/oplus/ipemanager/btadsorb/ble/PencilBleManager;I)V
+    :done
     return-void
 .end method
 
 .method private updateBattery(Landroid/bluetooth/BluetoothGatt;[B)V
-    .locals 3
+    .locals 4
     if-eqz p2, :done
     array-length v0, p2
     const/4 v1, 0x1
@@ -438,9 +514,18 @@
     and-int/lit16 v0, v0, 0xff
     const/16 v2, 0x64
     if-gt v0, v2, :done
+    iget-boolean v2, p0, Ltb371/PlusGatt;->precision:Z
+    if-eqz v2, :plus
+    add-int/lit8 v2, v0, 0x1
+    iput v2, p0, Ltb371/PlusGatt;->precisionLevelPlusOne:I
+    :plus
+    invoke-virtual {p1}, Landroid/bluetooth/BluetoothGatt;->getDevice()Landroid/bluetooth/BluetoothDevice;
+    move-result-object v3
+    invoke-static {v3, v0}, Ltb371/PenCapsule;->battery(Landroid/bluetooth/BluetoothDevice;I)V
     invoke-static {v0}, Ljava/lang/Integer;->toString(I)Ljava/lang/String;
     move-result-object v0
     invoke-direct {p0, p1, v1, v0}, Ltb371/PlusGatt;->store(Landroid/bluetooth/BluetoothGatt;ILjava/lang/String;)V
+    invoke-direct {p0}, Ltb371/PlusGatt;->refreshCard()V
     const-string v1, "Battery %: "
     invoke-virtual {v1, v0}, Ljava/lang/String;->concat(Ljava/lang/String;)Ljava/lang/String;
     move-result-object v0
@@ -473,6 +558,8 @@
     invoke-direct {p0, p3}, Ltb371/PlusGatt;->updatePower([B)V
     goto :done
     :hid
+    iget-boolean v1, p0, Ltb371/PlusGatt;->precision:Z
+    if-nez v1, :done
     const-string v1, "00002a4d-0000-1000-8000-00805f9b34fb"
     invoke-virtual {v1, v0}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
     move-result v1

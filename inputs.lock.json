@@ -3,5 +3,5 @@
   "sharing-provider": ["0010-c15-sharing-live-probe/c15-sharing-provider-test-v0.5.zip", "03a9bb7cdc90e50305e264f724f7889104f2fbe66327a114c1612dfecfdd4ae7"],
   "mirroring": ["0011-c15-mirroring/c15-mirroring-test-v0.1.zip", "b883c54ebc9406c74d64a48cb482af823aa5ee933439096d70a52afce52d9018"],
   "refresh": ["0012-c15-refresh/c15-refresh-pen-v0.1.zip", "18238589a1c3333ef6be051d470563f346c5b641ac22970edd447c42b13b70ec"],
-  "native-pen": ["0013-c15-native-pen/c15-native-pen-v0.3.zip", "68ebe0cdc1c7868d1ece352243cbf557730915a3c602dd25a33c637890997576"]
+  "native-pen": ["0019-c15-native-pen-percent/c15-native-pen-percent.zip", "a3e84891d177c400ab91fd73319cda8c75d749d4903df672df4814e941c2a31d"]
 }

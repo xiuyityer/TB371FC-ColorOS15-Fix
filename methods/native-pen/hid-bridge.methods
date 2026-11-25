@@ -29,7 +29,8 @@
 .end method
 
 .method public final tb371Refresh()V
-    .locals 7
+    .locals 8
+    const/4 v7, 0x0
     const/4 v0, 0x0
     iget-object v1, p0, Lcom/oplus/ipemanager/btadsorb/ble/PencilBleManager;->tb371Profile:Landroid/bluetooth/BluetoothProfile;
     if-eqz v1, :publish
@@ -44,18 +45,27 @@
     invoke-interface {v1}, Ljava/util/Iterator;->next()Ljava/lang/Object;
     move-result-object v2
     check-cast v2, Landroid/bluetooth/BluetoothDevice;
-    invoke-virtual {v2}, Landroid/bluetooth/BluetoothDevice;->getName()Ljava/lang/String;
-    move-result-object v3
-    const-string v4, "Lenovo Tab Pen Plus"
-    invoke-virtual {v4, v3}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
-    move-result v3
-    if-eqz v3, :next
     invoke-virtual {v2}, Landroid/bluetooth/BluetoothDevice;->getBondState()I
     move-result v3
     const/16 v4, 0xc
     if-ne v3, v4, :next
+    invoke-virtual {v2}, Landroid/bluetooth/BluetoothDevice;->getName()Ljava/lang/String;
+    move-result-object v3
+    const-string v4, "Lenovo Tab Pen Plus"
+    invoke-virtual {v4, v3}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+    move-result v4
+    if-nez v4, :select
+    # Keep Tab Pen Plus as the preferred pen when both are connected.
+    if-nez v7, :next
+    const-string v5, "Lenovo Precision Pen 3"
+    invoke-virtual {v5, v3}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+    move-result v5
+    if-eqz v5, :next
+    :select
     invoke-virtual {v2}, Landroid/bluetooth/BluetoothDevice;->getAddress()Ljava/lang/String;
     move-result-object v0
+    move-object v7, v2
+    if-eqz v4, :next
     :publish
     iget-object v1, p0, Lcom/oplus/ipemanager/btadsorb/ble/PencilBleManager;->tb371Mac:Ljava/lang/String;
     invoke-static {v0, v1}, Landroid/text/TextUtils;->equals(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Z
@@ -76,10 +86,14 @@
     if-eqz v0, :offline
     const/4 v4, 0x2
     move-object v1, v0
-    const-string v5, "bonded Lenovo Tab Pen Plus HID connected"
+    invoke-virtual {v7}, Landroid/bluetooth/BluetoothDevice;->getName()Ljava/lang/String;
+    move-result-object v5
+    const-string v6, " HID connected"
+    invoke-virtual {v5, v6}, Ljava/lang/String;->concat(Ljava/lang/String;)Ljava/lang/String;
+    move-result-object v5
     goto :notify
     :offline
-    const-string v5, "Lenovo Tab Pen Plus HID disconnected"
+    const-string v5, "Lenovo pen HID disconnected"
     :notify
     invoke-static {v3, v5}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
     iput-object v1, v2, Lcom/oplus/ipemanager/btadsorb/ble/g;->a:Ljava/lang/String;

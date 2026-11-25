@@ -5,7 +5,6 @@ MODROOT=${0%/*}
 . "$MODROOT/common.sh"
 exec >"$MODROOT/late.log" 2>&1
 module_enabled || exit 0
-supported_device || { echo 'Unsupported target'; exit 1; }
 no_legacy_modules || exit 1
 export C15_MODULE_ROOT="$MODROOT"
 

@@ -18,7 +18,7 @@ pkg=com.oplus.ipemanager
 target=/my_product/priv-app/IPeManager/IPeManager.apk
 source=$module_dir/IPeManager.plus-telemetry.apk
 stock=d4e7b3f0c71b0cd24e8b6abee317302edcaef31916351c8377c31b92afc2752a
-patch=00858670756349bbef76229d7c1d11d919cf9f92b62002b5119eb64cf3dec11f
+patch=253eb3c96be9414758cb2d8990fa19037bcc47a81b0d11908d46a4f560fe70fe
 
 prop() { /system/bin/getprop "$1"; }
 pid_for() { /system/bin/pidof "$1"; }
@@ -52,21 +52,36 @@ select_processes() {
         [ "$(parent_of "$server")" = "$zygote" ]
 }
 
-require test "$(prop ro.boot.slot_suffix)" = _a
-require test "$(prop ro.build.fingerprint)" = 'OnePlus/OPD2413/OP615EL1:15/AP3A.240617.008/V.1ffac6c_1-12d5f:user/release-keys'
-require test "$(/system/bin/getenforce)" = Enforcing
-
 ready=0
+waiting_for_unlock=0
 attempt=0
 while [ "$attempt" -lt 90 ]; do
     require module_enabled
     if [ "$(prop sys.boot_completed)" = 1 ]; then
         if user=$(android_cmd activity get-current-user) && [ "$user" = 0 ]; then
-            if select_processes; then
-                ready=1
-                break
+            # CoreService is direct-boot unaware. First unlock can be hours after boot.
+            if state=$(android_cmd activity get-started-user-state 0); then
+                case "$state" in
+                    RUNNING_LOCKED|RUNNING_UNLOCKING)
+                        if [ "$waiting_for_unlock" = 0 ]; then
+                            echo "Waiting for user 0 first unlock at $(timestamp): $state"
+                            waiting_for_unlock=1
+                        fi
+                        /system/bin/sleep 2
+                        continue
+                        ;;
+                    RUNNING_UNLOCKED)
+                        if select_processes; then
+                            ready=1
+                            break
+                        fi
+                        echo "Waiting for init zygote and system_server: zygote=$zygote server=$server"
+                        ;;
+                    *) echo "Waiting for user 0 startup: $state" ;;
+                esac
+            else
+                echo "Cannot query user 0 startup state: $state"
             fi
-            echo "Waiting for init zygote and system_server: zygote=$zygote server=$server"
         else
             echo "ActivityManager not ready for user 0: $user"
         fi
