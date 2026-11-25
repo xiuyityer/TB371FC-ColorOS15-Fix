@@ -52,3 +52,7 @@ SMALI_TOOLS=/path/to/smali-jars JAVA=java python3 native-pen/build-classifier.py
 ## 发布范围
 
 Git 跟踪修复脚本、说明和源码；Release 只附已经过实机验收的综合模块 ZIP。源码树不包含 ROM、供体二进制、设备日志、序列号、蓝牙地址或旧回退素材。第三方许可和来源见 [NOTICE](../NOTICE.md)。
+
+## 双卡通信共享
+
+beta.8-ims 的虚拟基带只启动实例 0，VINTF 也只声明 vircommslot1 和 imsradio0。v1.0.2 同时声明 vircommslot2 和 imsradio1。在匹配的 VirtualComm 环境中，如果系统报告两个槽位且启动配置为空或单卡，早期脚本使用 resetprop -n 在本次开机启用 dsds。双卡模式下，两个独立的基带进程分别以 -i 0 和 -i 1 初始化 Radio 和 IMS，共用原有 DMTP 服务。远端槽号仍按 Android 的实际 Phone 数量检查。停用模块并重启即可回退。

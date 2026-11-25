@@ -51,9 +51,11 @@ for interface in ovnet0 ovnet1 ovnet2; do
 done
 
 radio_pid=
+second_pid=
 comm_pid=
 bound=0
 cleanup() {
+    [ -z "$second_pid" ] || kill "$second_pid" 2>/dev/null || true
     [ -z "$radio_pid" ] || kill "$radio_pid" 2>/dev/null || true
     [ -z "$comm_pid" ] || kill "$comm_pid" 2>/dev/null || true
     if [ "$bound" = 1 ] && [ "$(target_hash)" = "$patched" ]; then
@@ -99,9 +101,18 @@ done
 [ "$(service check "$dmtp")" = "Service $dmtp: found" ]
 "$module_dir/subsys_daemon" -l "$module_dir/lib64/lib-c15-radio-ims-onload.so" -i 0 >>"$module_dir/radio.log" 2>&1 &
 radio_pid=$!
+case "$(getprop persist.radio.multisim.config)" in
+    dsds|dsda)
+        "$module_dir/subsys_daemon" -l "$module_dir/lib64/lib-c15-radio-ims-onload.so" -i 1 >>"$module_dir/radio2.log" 2>&1 &
+        second_pid=$! ;;
+esac
 printf 'commcenter=%s radio=%s phone=%s apk=%s\n' "$comm_pid" "$radio_pid" "$phone_pid" "$patched"
 # Leave each process stopped on failure so a persistent failure cannot crash-loop.
 while kill -0 "$comm_pid" 2>/dev/null && kill -0 "$radio_pid" 2>/dev/null && kill -0 "$phone_pid" 2>/dev/null; do
+    if [ -n "$second_pid" ] && ! kill -0 "$second_pid" 2>/dev/null; then
+        echo 'Second virtual modem stopped; see radio2.log'
+        second_pid=
+    fi
     sleep 3
 done
 printf 'provider stopped at %s\n' "$(date +%FT%T%z)"

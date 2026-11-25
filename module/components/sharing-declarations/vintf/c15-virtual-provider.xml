@@ -11,6 +11,7 @@
     <interface>
       <name>IRadio</name>
       <instance>vircommslot1</instance>
+      <instance>vircommslot2</instance>
     </interface>
   </hal>
   <hal format="hidl">
@@ -20,6 +21,7 @@
     <interface>
       <name>IImsRadio</name>
       <instance>imsradio0</instance>
+      <instance>imsradio1</instance>
     </interface>
   </hal>
 </manifest>

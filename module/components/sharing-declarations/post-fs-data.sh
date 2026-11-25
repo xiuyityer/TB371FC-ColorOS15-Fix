@@ -43,3 +43,12 @@ chcon u:object_r:vendor_file:s0 "$stage" "$stage/c15-virtual-provider.xml"
 mount -t overlay -o "ro,lowerdir=$stage:$target" overlay "$target"
 trap 'echo "exit=$?"' EXIT
 ls -lZ "$target/c15-virtual-provider.xml"
+
+# Android creates its Phone objects before the late provider starts. Apply a
+# boot-only default on the matched tablet stack, leaving stored settings intact.
+case "$(getprop persist.radio.multisim.config)" in
+    ''|ssss)
+        if [ "$(getprop ro.telephony.sim_slots.count)" = 2 ]; then
+            resetprop -n persist.radio.multisim.config dsds
+        fi ;;
+esac

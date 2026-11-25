@@ -40,7 +40,7 @@ def verify_zip(path, input_dir, root):
         assert contents['skip_mount'] == b''
         props = dict(line.split('=', 1) for line in contents['module.prop'].decode().splitlines())
         assert (props['id'], props['name'], props['version'], props['versionCode'], props['author']) == (
-            'kayu_coloros15_fix', '卡鱼 coloros15 综合修复', 'v1.0.2-beta.8-ims', '109', 'xiuyityer')
+            'kayu_coloros15_fix', '卡鱼 coloros15 综合修复', 'v1.0.2', '110', 'xiuyityer')
         declaration = 'components/sharing-declarations/system/etc/permissions/c15-virtual-telephony.xml'
         features = ElementTree.fromstring(contents[declaration])
         assert {elem.attrib['name'] for elem in features.findall('feature')} == {
@@ -58,7 +58,9 @@ def verify_zip(path, input_dir, root):
     assert ims.attrib['format'] == 'hidl'
     assert ims.findtext('version') == '1.7'
     assert ims.findtext('interface/name') == 'IImsRadio'
-    assert ims.findtext('interface/instance') == 'imsradio0'
+    assert [i.text for i in ims.findall('interface/instance')] == ['imsradio0', 'imsradio1']
+    radio = manifest.find("./hal/[name='android.hardware.radio']")
+    assert [i.text for i in radio.findall('interface/instance')] == ['vircommslot1', 'vircommslot2']
     assert digest(contents[IMS_LIBRARY]) == 'b8fe6a3b85f68ebfde070cea701c9fea15ce5a744e89066608998e80cc6e899b'
     count = 0
     for component, (relative, expected) in LOCK.items():
